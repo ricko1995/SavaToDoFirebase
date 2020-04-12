@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    tools:context=".SignUpActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:onClick="keyboardDismiss">
+
+        <androidx.core.widget.ContentLoadingProgressBar
+            android:id="@+id/signUpProgressBar"
+            style="@style/Widget.AppCompat.ProgressBar"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:elevation="25dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias=".25" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scaleType="fitXY"
+            android:src="@mipmap/leak_canary_icon"
+            app:layout_constraintBottom_toTopOf="@+id/nicknameTxtLayout"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!--        <com.google.android.material.button.MaterialButton-->
+        <!--            android:layout_width="wrap_content"-->
+        <!--            android:layout_height="27dp"-->
+        <!--            android:gravity="center|start"-->
+        <!--            android:padding="0dp"-->
+        <!--            android:text="@string/forgot_my_password"-->
+        <!--            android:textSize="12sp"-->
+        <!--            android:onClick="keyboardDismiss"-->
+        <!--            app:layout_constraintTop_toBottomOf="@+id/passwordTxtInput"-->
+        <!--            app:layout_constraintStart_toStartOf="@+id/passwordTxtInput"-->
+        <!--            style="@style/Widget.MaterialComponents.Button.TextButton.Dialog.Flush"/>-->
+
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/nicknameTxtLayout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="32dp"
+            android:autofillHints="hahah"
+            android:hint="Nickname*"
+            app:errorEnabled="true"
+            app:layout_constraintBottom_toTopOf="@+id/emailTxtLayout"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias=".4"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:startIconDrawable="@drawable/ic_account_circle_black_24dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/nicknameTxtInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textEmailAddress" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/emailTxtLayout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="32dp"
+            android:autofillHints="hahah"
+            android:hint="E-mail*"
+            app:errorEnabled="true"
+            app:layout_constraintBottom_toTopOf="@+id/passwordTxtLayout"
+            app:layout_constraintTop_toBottomOf="@+id/nicknameTxtLayout"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:startIconDrawable="@drawable/ic_mail_outline_black_24dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/signUpEmailTxtInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textEmailAddress" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/passwordTxtLayout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="32dp"
+            android:hint="Password*"
+            app:errorEnabled="true"
+            app:layout_constraintBottom_toTopOf="@+id/rePasswordTxtLayout"
+            app:layout_constraintTop_toBottomOf="@+id/emailTxtLayout"
+            app:startIconDrawable="@drawable/ic_lock_outline_black_24dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/signUpPasswordTxtInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/rePasswordTxtLayout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="32dp"
+            android:hint="Re-Type Password*"
+            app:errorEnabled="true"
+            app:layout_constraintBottom_toTopOf="@+id/signUpBtn"
+            app:layout_constraintTop_toBottomOf="@+id/passwordTxtLayout"
+            app:startIconDrawable="@drawable/ic_lock_outline_black_24dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/rePasswordTxtInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/signUpBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="72dp"
+            android:layout_marginTop="24dp"
+            android:text="Sign Up"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toTopOf="@+id/toLoginBtn"
+            app:layout_constraintTop_toBottomOf="@+id/rePasswordTxtLayout" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/toLoginBtn"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:text="Login Instead"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/signUpBtn" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</LinearLayout>

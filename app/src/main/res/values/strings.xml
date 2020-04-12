@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">KotlinFirebaseTest</string>
+
+    <string name="forgot_my_password"><u>Forgot my password</u></string>
+</resources>
