@@ -3,10 +3,9 @@ package com.ricko.kotlinfirebasetest
 import android.app.Activity
 import android.app.ActivityOptions
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.transition.Slide
-import android.transition.Visibility
 import android.util.Patterns
 import android.view.Gravity
 import android.view.View
@@ -16,21 +15,40 @@ import android.view.Window
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.transition.MaterialContainerTransformSharedElementCallback
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.android.synthetic.*
 import kotlinx.android.synthetic.main.login_layout.*
 
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var mAuth: FirebaseAuth
+    companion object{
+        var loginActivity:Activity? = null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        loginActivity = null
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Set up shared element transition and disable overlay so views don't show above system bars
+
+        // Set up shared element transition and disable overlay so views don't show above system bars
+//        setExitSharedElementCallback(MaterialContainerTransformSharedElementCallback())
+//        window.sharedElementsUseOverlay = false
+        window.requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS)
         window.requestFeature(Window.FEATURE_CONTENT_TRANSITIONS)
         window.exitTransition = Slide(Gravity.START)
+        loginActivity=this
+
 
         mAuth = FirebaseAuth.getInstance()
         if (mAuth.currentUser != null) {
-            val intent = Intent(this, MainActivity::class.java)
+            val intent = Intent(this, MainBottomNavigationActivity::class.java)
             startActivity(intent)
             finish()
         }
@@ -38,6 +56,10 @@ class LoginActivity : AppCompatActivity() {
         setContentView(R.layout.login_layout)
         val actionBar = supportActionBar
         actionBar?.title = "Login"
+
+        Handler().postDelayed({
+            keyboardDismiss(constraintLayout)
+        }, 100)
 
         loginBtn.setOnClickListener {
             val areInputsValid =
@@ -54,7 +76,7 @@ class LoginActivity : AppCompatActivity() {
                 a.addOnCompleteListener {
                     if (a.isSuccessful) {
                         loginProgressBar.visibility = GONE
-                        val intent = Intent(this, MainActivity::class.java)
+                        val intent = Intent(this, MainBottomNavigationActivity::class.java)
                         startActivity(intent)
                         finish()
                     } else {
@@ -76,19 +98,21 @@ class LoginActivity : AppCompatActivity() {
         }
 
         toSignUpBtn.setOnClickListener {
+
             val intent = Intent(this, SignUpActivity::class.java)
-            startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(this).toBundle())
+            val options = ActivityOptions.makeSceneTransitionAnimation(this)
+            startActivity(intent, options.toBundle())
         }
 
     }
 
     private fun toastMessage(msg: String) {
-        Toast.makeText(this@LoginActivity, msg, Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
     }
 
     fun keyboardDismiss(view: View) {
         val imm =
-            this@LoginActivity.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+            this.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(view.windowToken, 0)
         view.clearFocus()
     }

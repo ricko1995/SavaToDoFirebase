@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/menuEditUser"
+        android:title="Edit User" />
+    <item
+        android:id="@+id/menuChangeTheme"
+        android:title="Change Theme" />
+    <item
+        android:id="@+id/menuLogout"
+        android:title="Logout" />
+    <item
+        android:id="@+id/menuSortDirection"
+        android:title="Sort Direction"
+        android:icon="@drawable/ic_sort_by_alpha_white_24dp"
+        app:showAsAction="ifRoom"/>
+    <item
+        android:title="Sort By"
+        android:icon="@drawable/ic_sort_white_24dp"
+        app:showAsAction="ifRoom">
+        <menu>
+            <item android:title="Sort by time"
+                android:id="@+id/menuSortByTime"/>
+            <item android:title="Sort by tip"
+                android:id="@+id/menuSortByTip"/>
+        </menu>
+    </item>
+
+</menu>

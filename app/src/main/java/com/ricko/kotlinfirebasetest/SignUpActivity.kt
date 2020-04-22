@@ -3,13 +3,19 @@ package com.ricko.kotlinfirebasetest
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.transition.Slide
 import android.util.Patterns
+import android.view.Gravity
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.view.Window
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.ActivityNavigator
+import com.google.android.material.transition.MaterialContainerTransformSharedElementCallback
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.UserProfileChangeRequest
@@ -27,12 +33,18 @@ class SignUpActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        window.requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS)
+//        setEnterSharedElementCallback(MaterialContainerTransformSharedElementCallback())
+        window.exitTransition = Slide(Gravity.START)
+
+
         mAuth = FirebaseAuth.getInstance()
         if (mAuth.currentUser != null) {
-            val intent = Intent(this, MainActivity::class.java)
+            val intent = Intent(this, MainBottomNavigationActivity::class.java)
             startActivity(intent)
             finish()
         }
+
 
         setContentView(R.layout.sign_up_layout)
         val actionBar = supportActionBar
@@ -43,6 +55,10 @@ class SignUpActivity : AppCompatActivity() {
         toLoginBtn.setOnClickListener {
             finishAfterTransition()
         }
+
+        Handler().postDelayed({
+            keyboardDismiss(constraintLayout)
+        }, 100)
 
         signUpBtn.setOnClickListener {
 
@@ -56,6 +72,7 @@ class SignUpActivity : AppCompatActivity() {
 
             if (areInputsValid) {
                 signUpProgressBar.visibility = VISIBLE
+                signUpBtn.isEnabled = false
                 keyboardDismiss(constraintLayout)
                 val a = mAuth.createUserWithEmailAndPassword(
                     signUpEmailTxtInput.text.toString(),
@@ -73,6 +90,11 @@ class SignUpActivity : AppCompatActivity() {
         }
     }
 
+    override fun finish() {
+        super.finish()
+        ActivityNavigator.applyPopAnimationsToPendingTransition(this)
+    }
+
     private fun updateUser(user: FirebaseUser?) {
         val profileUpdates = UserProfileChangeRequest.Builder()
             .setDisplayName(nicknameTxtInput.text.toString())
@@ -82,26 +104,30 @@ class SignUpActivity : AppCompatActivity() {
             ?.addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     toastMessage("User Created Successfully")
-                    signUpProgressBar.visibility = GONE
-                    val intent = Intent(this, MainActivity::class.java)
+                    val intent = Intent(this, MainBottomNavigationActivity::class.java)
                     startActivity(intent)
+                    signUpProgressBar.visibility = GONE
+                    signUpBtn.isEnabled = true
+                    LoginActivity.loginActivity?.finish()
                     finish()
                 } else {
                     signUpProgressBar.visibility = GONE
+                    signUpBtn.isEnabled = true
                     toastMessage("Account created but nickname is not saved")
                 }
+
             }
     }
 
     fun keyboardDismiss(view: View) {
         val imm =
-            this@SignUpActivity.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+            this.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(view.windowToken, 0)
         view.clearFocus()
     }
 
     private fun toastMessage(msg: String) {
-        Toast.makeText(this@SignUpActivity, msg, Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
     }
 
     private fun CharSequence?.isValidEmail() =

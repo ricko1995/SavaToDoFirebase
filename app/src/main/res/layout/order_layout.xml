@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/orderCardView"
+    style="@style/Widget.MyApp.MyCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
+    android:clickable="true"
+    android:focusable="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="15dp">
+
+        <ImageView
+            android:id="@+id/bgCircle"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:alpha="0.8"
+            android:elevation="25dp"
+            android:src="@drawable/bg_circle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/iconText"
+            style="@style/TextAppearance.MaterialComponents.Overline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:elevation="26dp"
+            tools:text="Ar"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toBottomOf="@+id/bgCircle"
+            app:layout_constraintEnd_toEndOf="@+id/bgCircle"
+            app:layout_constraintStart_toStartOf="@+id/bgCircle"
+            app:layout_constraintTop_toTopOf="@+id/bgCircle" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/orderNicknameTxt"
+            style="@style/TextAppearance.MaterialComponents.Headline6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="15dp"
+            android:elevation="5dp"
+            tools:text="Nickname"
+            app:layout_constraintBottom_toBottomOf="@+id/bgCircle"
+            app:layout_constraintStart_toEndOf="@+id/bgCircle"
+            app:layout_constraintTop_toTopOf="@+id/bgCircle" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/orderTimeTxt"
+            style="@style/TextAppearance.MaterialComponents.Body2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Time"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/dividingLine1"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginVertical="15dp"
+            android:alpha="0.5"
+            android:src="?attr/colorOnBackground"
+            app:layout_constraintBottom_toTopOf="@+id/orderDescriptionTxt"
+            app:layout_constraintTop_toBottomOf="@+id/bgCircle" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/orderDescriptionTxt"
+            style="@style/TextAppearance.MaterialComponents.Headline6"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="5dp"
+            tools:text="Order Desction Order Descn Order Order Desction Order Destion Order Description Order Description Order Description Order Description Description Order Description Order Description "
+            app:layout_constraintBottom_toBottomOf="@+id/dividingLine2"
+            app:layout_constraintEnd_toStartOf="@+id/orderTipTxt"
+            app:layout_constraintHorizontal_chainStyle="spread_inside"
+            app:layout_constraintHorizontal_weight="15"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/dividingLine1" />
+
+        <ImageView
+            android:layout_width="1dp"
+            android:layout_height="0dp"
+            android:alpha="0.5"
+            android:src="?attr/colorOnBackground"
+            app:layout_constraintBottom_toBottomOf="@+id/orderTipTxt"
+            app:layout_constraintStart_toEndOf="@+id/orderDescriptionTxt"
+            app:layout_constraintTop_toTopOf="@+id/orderTipTxt" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/orderTipTxt"
+            style="@style/TextAppearance.MaterialComponents.Headline6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="20dp"
+            tools:text="Tip"
+            app:layout_constraintBottom_toBottomOf="@+id/orderDescriptionTxt"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_weight="5"
+            app:layout_constraintStart_toEndOf="@+id/orderDescriptionTxt"
+            app:layout_constraintTop_toTopOf="@+id/orderDescriptionTxt" />
+
+        <ImageView
+            android:id="@+id/dividingLine2"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginVertical="15dp"
+            android:alpha="0.5"
+            android:src="?attr/colorOnBackground"
+            app:layout_constraintTop_toBottomOf="@+id/orderDescriptionTxt" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/orderLocationTxt"
+            style="@style/TextAppearance.MaterialComponents.Body1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="5dp"
+            android:layout_marginEnd="5dp"
+            tools:text="Order Location"
+            app:layout_constraintEnd_toStartOf="@id/orderStatusTxt"
+            app:layout_constraintHorizontal_chainStyle="spread_inside"
+            app:layout_constraintHorizontal_weight="6"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/dividingLine2" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/orderStatusTxt"
+            style="@style/TextAppearance.MaterialComponents.Body1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="5dp"
+            android:layout_marginStart="5dp"
+            android:gravity="end"
+            tools:text="Order Status"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_weight="4"
+            app:layout_constraintStart_toEndOf="@id/orderLocationTxt"
+            app:layout_constraintTop_toBottomOf="@id/dividingLine2" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/orderNegativeBtn"
+            style="@style/Widget.suckOrderButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="20dp"
+            tools:text="order\nsucks (88)"
+            app:layout_constraintEnd_toStartOf="@+id/orderPositiveBtn"
+            app:layout_constraintHorizontal_chainStyle="spread_inside"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/orderLocationTxt"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/orderPositiveBtn"
+            style="@style/Widget.acceptOrderButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            tools:text="accept\norder"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/orderNegativeBtn"
+            app:layout_constraintTop_toBottomOf="@+id/orderLocationTxt" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

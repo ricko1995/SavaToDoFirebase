@@ -16,11 +16,11 @@
 
         <androidx.core.widget.ContentLoadingProgressBar
             android:id="@+id/loginProgressBar"
-            style="@style/Widget.AppCompat.ProgressBar"
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:elevation="25dp"
             android:visibility="gone"
+            style="?android:attr/progressBarStyle"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -31,7 +31,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:scaleType="fitXY"
-            android:src="@mipmap/leak_canary_icon"
+            android:src="@mipmap/ic_launcher"
             app:layout_constraintBottom_toTopOf="@+id/emailTxtLayout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -47,7 +47,8 @@
             android:text="@string/forgot_my_password"
             android:textSize="12sp"
             app:layout_constraintStart_toStartOf="@+id/passwordTxtLayout"
-            app:layout_constraintTop_toBottomOf="@+id/passwordTxtLayout" />
+            app:layout_constraintTop_toBottomOf="@+id/passwordTxtLayout"
+            />
 
 
         <com.google.android.material.textfield.TextInputLayout
@@ -69,7 +70,7 @@
                 android:id="@+id/emailTxtInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textEmailAddress" />
+                android:inputType="textEmailAddress"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout

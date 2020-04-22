@@ -15,7 +15,7 @@
 
         <androidx.core.widget.ContentLoadingProgressBar
             android:id="@+id/signUpProgressBar"
-            style="@style/Widget.AppCompat.ProgressBar"
+            style="?android:attr/progressBarStyle"
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:elevation="25dp"
@@ -30,23 +30,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:scaleType="fitXY"
-            android:src="@mipmap/leak_canary_icon"
+            android:src="@mipmap/ic_launcher"
             app:layout_constraintBottom_toTopOf="@+id/nicknameTxtLayout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-
-        <!--        <com.google.android.material.button.MaterialButton-->
-        <!--            android:layout_width="wrap_content"-->
-        <!--            android:layout_height="27dp"-->
-        <!--            android:gravity="center|start"-->
-        <!--            android:padding="0dp"-->
-        <!--            android:text="@string/forgot_my_password"-->
-        <!--            android:textSize="12sp"-->
-        <!--            android:onClick="keyboardDismiss"-->
-        <!--            app:layout_constraintTop_toBottomOf="@+id/passwordTxtInput"-->
-        <!--            app:layout_constraintStart_toStartOf="@+id/passwordTxtInput"-->
-        <!--            style="@style/Widget.MaterialComponents.Button.TextButton.Dialog.Flush"/>-->
 
 
         <com.google.android.material.textfield.TextInputLayout
@@ -55,7 +43,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="32dp"
+            android:layout_marginVertical="10dp"
             android:autofillHints="hahah"
+            app:helperText="Example: user123"
             android:hint="Nickname*"
             app:errorEnabled="true"
             app:layout_constraintBottom_toTopOf="@+id/emailTxtLayout"
@@ -78,8 +68,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="32dp"
+            android:layout_marginVertical="10dp"
             android:autofillHints="hahah"
             android:hint="E-mail*"
+            app:helperText="Example: user@msn.com"
             app:errorEnabled="true"
             app:layout_constraintBottom_toTopOf="@+id/passwordTxtLayout"
             app:layout_constraintTop_toBottomOf="@+id/nicknameTxtLayout"
@@ -99,7 +91,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="32dp"
+            android:layout_marginVertical="10dp"
             android:hint="Password*"
+            app:helperText="At least 6 characters"
             app:errorEnabled="true"
             app:layout_constraintBottom_toTopOf="@+id/rePasswordTxtLayout"
             app:layout_constraintTop_toBottomOf="@+id/emailTxtLayout"
@@ -118,6 +112,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="32dp"
+            android:layout_marginVertical="10dp"
             android:hint="Re-Type Password*"
             app:errorEnabled="true"
             app:layout_constraintBottom_toTopOf="@+id/signUpBtn"

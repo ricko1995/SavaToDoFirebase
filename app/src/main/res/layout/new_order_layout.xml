@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    tools:context=".NewOrderActivity">
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="keyboardDismiss"
+        android:id="@+id/constraintLayout">
+
+        <androidx.core.widget.ContentLoadingProgressBar
+            android:id="@+id/newOrderProgressBar"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:elevation="25dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias=".25" />
+
+        <ImageView
+            android:id="@+id/newOrderImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:scaleType="fitXY"
+            android:src="@mipmap/ic_launcher"
+            app:layout_constraintBottom_toTopOf="@+id/orderDescriptionInputLayout"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/orderDescriptionInputLayout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:hint="What do you need*"
+            app:helperText="Example: Sir, kava, vrhnje..."
+            app:layout_constraintTop_toBottomOf="@+id/newOrderImage"
+            app:startIconDrawable="@drawable/ic_shopping_cart_black_24dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/orderDescriptionInputTxt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/orderTipInputLayout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:hint="Your tip to the deliverer*"
+            app:helperText="Example: 5.26HRK"
+            app:layout_constraintTop_toBottomOf="@+id/orderDescriptionInputLayout"
+            app:startIconDrawable="@drawable/ic_attach_money_black_24dp"
+            app:suffixText="HRK">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/orderTipInputTxt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/orderLocationInputLayout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:hint="Your tip to the deliverer*"
+            app:helperText="Example: Zgrada nasuprot studentskog doma Sava..."
+            app:layout_constraintTop_toBottomOf="@+id/orderTipInputLayout"
+            app:startIconDrawable="@drawable/ic_location_on_black_24dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/orderLocationInputTxt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/orderRoomInputLayout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:hint="Room"
+            app:helperText="Optional"
+            app:layout_constraintEnd_toStartOf="@+id/orderPavInputLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/orderLocationInputLayout"
+            app:startIconDrawable="@drawable/ic_room_black_24dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/orderRoomInputTxt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/orderPavInputLayout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:hint="Pavilion"
+            app:helperText="Optional"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/orderRoomInputLayout"
+            app:layout_constraintTop_toBottomOf="@+id/orderLocationInputLayout"
+            app:startIconDrawable="@drawable/ic_location_city_black_24dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/orderPavInputTxt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/placeOrderBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:paddingHorizontal="50dp"
+            android:text="Place Order"
+            app:icon="@drawable/ic_add_shopping_cart_black_24dp"
+            app:iconGravity="end"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/orderPavInputLayout" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

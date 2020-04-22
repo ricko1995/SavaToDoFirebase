@@ -3,6 +3,7 @@ package com.ricko.kotlinfirebasetest
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
@@ -20,6 +21,8 @@ class MainActivity : AppCompatActivity() {
 
     private val dummyOrderDescription: List<String> =
         listOf("sir", "kava", "kifla", "piva", "vino", "petrovo vino", "kruh", "salama")
+    private val dummyOrderStatus: List<String> =
+        listOf("Order Made", "Order Finished", "Order Accepted")
 
     private lateinit var mAuth: FirebaseAuth
     private val email = "123@123.com"
@@ -27,12 +30,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var db: FirebaseFirestore
     private val orders: MutableList<OrderModel> = mutableListOf()
     private lateinit var ordersCollection: CollectionReference
-    private var a: ListenerRegistration? = null
+    private var listenerRegistration: ListenerRegistration? = null
 
     override fun onDestroy() {
         super.onDestroy()
         Toast.makeText(this, "destroyed", Toast.LENGTH_SHORT).show()
-        a?.remove()
+        listenerRegistration?.remove()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,7 +59,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (mAuth.currentUser != null) {
-            a = ordersCollection.addSnapshotListener { querySnapshot, firebaseFirestoreException ->
+            listenerRegistration = ordersCollection.addSnapshotListener { querySnapshot, firebaseFirestoreException ->
                 toastMessage("op op op, " + querySnapshot?.size().toString() + " new orders")
             }
 
@@ -81,11 +84,13 @@ class MainActivity : AppCompatActivity() {
         addOrderBtn.setOnClickListener {
             if (mAuth.currentUser != null) {
                 val newOrder = OrderModel(
-                    mAuth.currentUser!!.uid,
-                    dummyOrderDescription[(Math.random() * dummyOrderDescription.size).roundToInt()],
-                    "OrderMade", (Math.random() * 10).roundToInt(),
+                    mAuth.uid,
+                    dummyOrderDescription[(Math.random() * dummyOrderDescription.size - 0.5).roundToInt()],
+                    dummyOrderStatus[(Math.random() * dummyOrderStatus.size - 0.5).roundToInt()],
+                    (Math.random() * 10).roundToInt(),
                     Timestamp.now(),
-                    (Math.random() * 100).toFloat()
+                    (Math.random() * 100).toFloat(),
+                    mAuth.currentUser?.displayName
                 )
                 ordersCollection.document().set(newOrder)
 
@@ -94,39 +99,42 @@ class MainActivity : AppCompatActivity() {
 
         orderDetailsBtn.setOnClickListener {
             if (mAuth.currentUser != null) {
-//                orders.whereEqualTo("orderBy", "AWd7mCFNLLfqDQhzI9n41CmnG1y2")
-//                    .whereEqualTo("orderSucks", editTxt1.text.toString().toInt()).get()
-//                    .addOnSuccessListener { result ->
-//                        txt3.setText(result.documents[0]?.data?.get("orderTip")?.toString())
-//                    }
-//                orders.whereEqualTo("orderBy", "AWd7mCFNLLfqDQhzI9n41CmnG1y2")
-//                    .whereEqualTo("orderSucks", editTxt1.text.toString().toInt()).get()
-//                    .addOnSuccessListener { result ->
-//                        txt2.setText(result.size().toString())
-//                        Log.d("TAG", result.size().toString())
-//                        for (document in result) {
-//                            Log.d("TAG", "${document.id} => ${document.data}")
-//                        }
-//                    }
-//                    .addOnFailureListener { exception ->
-//                        Log.w("TAG", "Error getting documents.", exception)
-//                    }
 
-                ordersCollection.orderBy("orderTimeStamp", Query.Direction.DESCENDING).get()
+                ordersCollection.whereEqualTo("orderDescription", "petrovo vino")
+                    .whereArrayContains("orderSucksBy", "sfasfgadf").get()
                     .addOnSuccessListener { result ->
+
+                        toastMessage(result.documents[0].id)
+
                         for (document in result.withIndex()) {
 
                             orders.add(
                                 document.index,
                                 document.value.toObject(OrderModel::class.java)
                             )
+                            orders[document.index].id = document.value.id
+                            toastMessage(orders[document.index].orderDescription.toString())
                         }
-
-                        val currentTime = Timestamp.now().seconds
-                        val orderTime = orders[0].orderTimeStamp!!.seconds
-                        val diff = compare(currentTime, orderTime)
-                        toastMessage(diff)
                     }
+                    .addOnFailureListener { exception ->
+                        Log.w("TAG", "Error getting documents.", exception)
+                    }
+
+//                ordersCollection.orderBy("orderTimeStamp", Query.Direction.DESCENDING).get()
+//                    .addOnSuccessListener { result ->
+//                        for (document in result.withIndex()) {
+//
+//                            orders.add(
+//                                document.index,
+//                                document.value.toObject(OrderModel::class.java)
+//                            )
+//                        }
+//
+//                        val currentTime = Timestamp.now().seconds
+//                        val orderTime = orders[0].orderTimeStamp!!.seconds
+//                        val diff = compare(currentTime, orderTime)
+//                        toastMessage(diff)
+//                    }
             } else toastMessage("not signed in order details")
         }
     }
@@ -156,12 +164,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun toastMessage(msg: String) {
 
-        Toast.makeText(this@MainActivity, msg, Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
     }
 
-    public fun keyboardDismiss(view: View) {
+    fun keyboardDismiss(view: View) {
         val imm =
-            this@MainActivity.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+            this.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(view.windowToken, 0)
         view.clearFocus()
     }
