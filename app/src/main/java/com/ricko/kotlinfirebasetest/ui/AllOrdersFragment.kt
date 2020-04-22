@@ -87,41 +87,41 @@ class AllOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInter
             }
         })
 
-
-
         return root
     }
 
-    private fun registerListener(){
+    private fun registerListener() {
         if (mAuth.currentUser != null) {
             listenerRegistration = ordersCollection.whereEqualTo(ORDER_STATUS, STATUS_ORDER_MADE)
                 .orderBy(sortBy, sortDirection)
                 .addSnapshotListener { querySnapshot, _ ->
-                    val newOrders: ArrayList<OrderModel> = ArrayList()
-                    var i = 0
-                    if (recyclerViewAdapter != null && querySnapshot != null) {
-                        for (document in querySnapshot.documents) {
-                            if (document[ORDER_BY]!! != mAuth.uid) {
-                                newOrders.add(
-                                    i,
-                                    document.toObject(OrderModel::class.java)!!
-                                )
-                                newOrders[i].id = document.id
-                                i++
+                    if (recyclerViewAdapter != null) {
+                        if (querySnapshot != null) {
+                            val newOrders: ArrayList<OrderModel> = ArrayList()
+                            var i = 0
+                            for (document in querySnapshot.documents) {
+                                if (document[ORDER_BY]!! != mAuth.uid) {
+                                    newOrders.add(
+                                        i,
+                                        document.toObject(OrderModel::class.java)!!
+                                    )
+                                    newOrders[i].id = document.id
+                                    i++
+                                }
+                            }
+                            when {
+                                newOrders.size > allOrders.size -> {
+                                    updateAddedOrder(newOrders)
+                                }
+                                newOrders.size < allOrders.size -> {
+                                    updateRemovedOrder(newOrders)
+                                }
+                                newOrders.size == allOrders.size -> {
+                                    updateModifiedOrder(newOrders)
+                                }
                             }
                         }
-                        when {
-                            newOrders.size > allOrders.size -> {
-                                updateAddedOrder(newOrders)
-                            }
-                            newOrders.size < allOrders.size -> {
-                                updateRemovedOrder(newOrders)
-                            }
-                            newOrders.size == allOrders.size -> {
-                                updateModifiedOrder(newOrders)
-                            }
-                        }
-                    } else getOrders()
+                    } else setOrdersToRecyclerView(querySnapshot)
                 }
         }
     }
@@ -153,7 +153,7 @@ class AllOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInter
 
         for (addedOrder in newOrders) {
             allOrders.add(0, addedOrder)
-            if(sortDirection == Query.Direction.ASCENDING){
+            if (sortDirection == Query.Direction.ASCENDING) {
                 when (sortBy) {
                     ORDER_TIMESTAMP -> {
                         allOrders.sortBy { it.orderTimeStamp }
@@ -166,7 +166,7 @@ class AllOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInter
                     }
                 }
 
-            } else{
+            } else {
                 when (sortBy) {
                     ORDER_TIMESTAMP -> {
                         allOrders.sortByDescending { it.orderTimeStamp }
@@ -186,155 +186,143 @@ class AllOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInter
     }
 
 
-    private fun getOrders() {
-        if (mAuth.currentUser != null) {
-            parentActivity.progressBarState(VISIBLE)
-            allOrders.clear()
+    private fun setOrdersToRecyclerView(querySnapshot: QuerySnapshot? = null) {
+        parentActivity.progressBarState(VISIBLE)
+        allOrders.clear()
 
-            val a = ordersCollection.whereEqualTo(ORDER_STATUS, STATUS_ORDER_MADE)
-                .orderBy(sortBy, sortDirection).get()
-
-            a.addOnCompleteListener {
-                if (it.isSuccessful) {
-                    var i = 0
-                    for (document in it.result!!) {
-                        if (document[ORDER_BY]!! != mAuth.uid) {
-                            allOrders.add(
-                                i,
-                                document.toObject(OrderModel::class.java)
-                            )
-                            allOrders[i].id = document.id
-                            i++
-                        }
-                    }
-                    updateRecyclerView()
-
-                } else {
-                    toastMessage("Error")
-                    Log.d("TAG", it.exception.toString())
+        if (querySnapshot != null) {
+            var i = 0
+            for (document in querySnapshot.documents) {
+                if (document[ORDER_BY]!! != mAuth.uid) {
+                    allOrders.add(
+                        i,
+                        document.toObject(OrderModel::class.java)!!
+                    )
+                    allOrders[i].id = document.id
+                    i++
                 }
-                parentActivity.progressBarState(GONE)
             }
+            updateRecyclerView()
+            parentActivity.progressBarState(GONE)
+        } else toastMessage("Something went wrong. Try updating app")
+}
 
-        } else toastMessage("You are not signed in!")
+private fun updateRecyclerView() {
+    if (!allOrders.isNullOrEmpty()) {
+        recyclerViewAdapter =
+            OrdersRecyclerViewAdapter(allOrders, this, ALL_ORDERS, parentActivity)
+        recyclerView.adapter = recyclerViewAdapter
+        recyclerView.layoutManager = LinearLayoutManager(context)
+        recyclerView.setHasFixedSize(true)
     }
+}
 
-    private fun updateRecyclerView() {
-        if (!allOrders.isNullOrEmpty()) {
-            recyclerViewAdapter =
-                OrdersRecyclerViewAdapter(allOrders, this, ALL_ORDERS, parentActivity)
-            recyclerView.adapter = recyclerViewAdapter
-            recyclerView.layoutManager = LinearLayoutManager(context)
-            recyclerView.setHasFixedSize(true)
-        }
-    }
+private fun toastMessage(msg: String) {
+    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+}
 
-    private fun toastMessage(msg: String) {
-        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-    }
+override fun onCardClick(order: OrderModel) {
+    //TODO open activity OrderDetailActivity
 
-    override fun onCardClick(order: OrderModel) {
-        //TODO open activity OrderDetailActivity
+    val intent = Intent(context, OrderDetailActivity::class.java)
+    intent.putExtra("order", Gson().toJson(order))
+    startActivity(intent)
+}
 
-        val intent = Intent(context, OrderDetailActivity::class.java)
-        intent.putExtra("order", Gson().toJson(order))
-        startActivity(intent)
-    }
-
-    override fun onPositiveBtnClick(order: OrderModel) {
-        ordersCollection.document(order.id!!).update(
-            mapOf(
-                ORDER_STATUS to STATUS_ORDER_ACCEPTED,
-                ORDER_ACCEPTED_BY to mAuth.uid
-            )
+override fun onPositiveBtnClick(order: OrderModel) {
+    ordersCollection.document(order.id!!).update(
+        mapOf(
+            ORDER_STATUS to STATUS_ORDER_ACCEPTED,
+            ORDER_ACCEPTED_BY to mAuth.uid
         )
-            .addOnCompleteListener {
-                if (it.isSuccessful) {
-                    toastMessage("Order Accepted")
-                } else {
-                    toastMessage("Error")
-                    Log.d("TAG", it.exception.toString())
-                }
+    )
+        .addOnCompleteListener {
+            if (it.isSuccessful) {
+                toastMessage("Order Accepted")
+            } else {
+                toastMessage("Error")
+                Log.d("TAG", it.exception.toString())
             }
-    }
+        }
+}
 
-    override fun onNegativeBtnClick(order: OrderModel) {
-        ordersCollection.document(order.id!!)
-            .update(ORDER_SUCKS_BY, FieldValue.arrayUnion(mAuth.uid))
-            .addOnCompleteListener {
-                if (it.isSuccessful) {
-                    toastMessage("Order Sucks")
-                } else {
-                    toastMessage("Error")
-                    Log.d("TAG", it.exception.toString())
-                }
+override fun onNegativeBtnClick(order: OrderModel) {
+    ordersCollection.document(order.id!!)
+        .update(ORDER_SUCKS_BY, FieldValue.arrayUnion(mAuth.uid))
+        .addOnCompleteListener {
+            if (it.isSuccessful) {
+                toastMessage("Order Sucks")
+            } else {
+                toastMessage("Error")
+                Log.d("TAG", it.exception.toString())
             }
-    }
+        }
+}
 
-    override fun onNeutralBtnClick(order: OrderModel) {
+override fun onNeutralBtnClick(order: OrderModel) {
 //        TODO("Not yet implemented")
-    }
+}
 
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-        when (item.itemId) {
-            R.id.menuEditUser -> {
-                updateRecyclerView()
-                return true
+    when (item.itemId) {
+        R.id.menuEditUser -> {
+            updateRecyclerView()
+            return true
+        }
+        R.id.menuChangeTheme -> {
+            toastMessage("change theme")
+            return true
+        }
+        R.id.menuLogout -> {
+            mAuth.signOut()
+            val intent = Intent(context, LoginActivity::class.java)
+            startActivity(intent)
+            activity?.finish()
+            return true
+        }
+        R.id.menuSortDirection -> {
+            sortDirection = if (sortDirection == Query.Direction.DESCENDING) {
+                Query.Direction.ASCENDING
+            } else {
+                Query.Direction.DESCENDING
             }
-            R.id.menuChangeTheme -> {
-                toastMessage("change theme")
-                return true
-            }
-            R.id.menuLogout -> {
-                mAuth.signOut()
-                val intent = Intent(context, LoginActivity::class.java)
-                startActivity(intent)
-                activity?.finish()
-                return true
-            }
-            R.id.menuSortDirection -> {
-                sortDirection = if (sortDirection == Query.Direction.DESCENDING) {
-                    Query.Direction.ASCENDING
-                } else {
-                    Query.Direction.DESCENDING
-                }
 
+            listenerRegistration?.remove()
+            registerListener()
+            Handler().postDelayed({
+                recyclerView.smoothScrollToPosition(0)
+            }, 80)
+            return true
+        }
+        R.id.menuSortByTime -> {
+            if (sortBy != ORDER_TIMESTAMP) {
+                sortBy = ORDER_TIMESTAMP
                 listenerRegistration?.remove()
                 registerListener()
                 Handler().postDelayed({
                     recyclerView.smoothScrollToPosition(0)
-                },80)
-                return true
+                }, 80)
             }
-            R.id.menuSortByTime -> {
-                if (sortBy != ORDER_TIMESTAMP) {
-                    sortBy = ORDER_TIMESTAMP
-                    listenerRegistration?.remove()
-                    registerListener()
-                    Handler().postDelayed({
-                        recyclerView.smoothScrollToPosition(0)
-                    },80)
-                }
-                return true
-            }
-            R.id.menuSortByTip -> {
-                if (sortBy != ORDER_TIP) {
-                    sortBy = ORDER_TIP
-                    listenerRegistration?.remove()
-                    registerListener()
-                    Handler().postDelayed({
-                        recyclerView.smoothScrollToPosition(0)
-                    },80)
-                }
-                return true
-            }
-            else -> {
-                return super.onOptionsItemSelected(item)
-            }
+            return true
         }
-
-
+        R.id.menuSortByTip -> {
+            if (sortBy != ORDER_TIP) {
+                sortBy = ORDER_TIP
+                listenerRegistration?.remove()
+                registerListener()
+                Handler().postDelayed({
+                    recyclerView.smoothScrollToPosition(0)
+                }, 80)
+            }
+            return true
+        }
+        else -> {
+            return super.onOptionsItemSelected(item)
+        }
     }
+
+
+}
 }

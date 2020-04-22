@@ -3,27 +3,24 @@ package com.ricko.kotlinfirebasetest.ui
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
+import android.view.View.GONE
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.*
 import com.ricko.kotlinfirebasetest.*
 import com.ricko.kotlinfirebasetest.OrderModel.Companion.ORDER_ACCEPTED_BY
 import com.ricko.kotlinfirebasetest.OrdersRecyclerViewAdapter.Companion.ACCEPTED_ORDERS
 import com.ricko.kotlinfirebasetest.OrderModel.Companion.ORDER_STATUS
 import com.ricko.kotlinfirebasetest.OrderModel.Companion.ORDER_TIMESTAMP
 import com.ricko.kotlinfirebasetest.OrderModel.Companion.ORDER_TIP
-import com.ricko.kotlinfirebasetest.OrderModel.Companion.STATUS_ORDER_ACCEPTED
+import com.ricko.kotlinfirebasetest.R
 import kotlinx.android.synthetic.main.fragment_accepted_orders.view.*
 
 class AcceptedOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInterface {
@@ -86,32 +83,34 @@ class AcceptedOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicks
         return root
     }
 
-    private fun registerListener(){
+    private fun registerListener() {
         if (mAuth.currentUser != null) {
             listenerRegistration = ordersCollection.whereEqualTo(ORDER_ACCEPTED_BY, mAuth.uid)
                 .orderBy(sortBy, sortDirection)
                 .addSnapshotListener { querySnapshot, _ ->
-                    val newOrders: ArrayList<OrderModel> = ArrayList()
-                    if (recyclerViewAdapter != null && querySnapshot != null) {
-                        for (document in querySnapshot.documents.withIndex()) {
-                            newOrders.add(
-                                document.index,
-                                document.value.toObject(OrderModel::class.java)!!
-                            )
-                            newOrders[document.index].id = document.value.id
+                    if (recyclerViewAdapter != null) {
+                        if (querySnapshot != null) {
+                            val newOrders: ArrayList<OrderModel> = ArrayList()
+                            for (document in querySnapshot.documents.withIndex()) {
+                                newOrders.add(
+                                    document.index,
+                                    document.value.toObject(OrderModel::class.java)!!
+                                )
+                                newOrders[document.index].id = document.value.id
+                            }
+                            when {
+                                newOrders.size > acceptedOrders.size -> {
+                                    updateAddedOrder(newOrders)
+                                }
+                                newOrders.size < acceptedOrders.size -> {
+                                    updateRemovedOrder(newOrders)
+                                }
+                                newOrders.size == acceptedOrders.size -> {
+                                    updateModifiedOrder(newOrders)
+                                }
+                            }
                         }
-                        when {
-                            newOrders.size > acceptedOrders.size -> {
-                                updateAddedOrder(newOrders)
-                            }
-                            newOrders.size < acceptedOrders.size -> {
-                                updateRemovedOrder(newOrders)
-                            }
-                            newOrders.size == acceptedOrders.size -> {
-                                updateModifiedOrder(newOrders)
-                            }
-                        }
-                    } else getOrders()
+                    } else setOrdersToRecyclerView(querySnapshot)
                 }
         }
     }
@@ -143,7 +142,7 @@ class AcceptedOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicks
 
         for (addedOrder in newOrders) {
             acceptedOrders.add(0, addedOrder)
-            if(sortDirection == Query.Direction.ASCENDING){
+            if (sortDirection == Query.Direction.ASCENDING) {
                 when (sortBy) {
                     ORDER_TIMESTAMP -> {
                         acceptedOrders.sortBy { it.orderTimeStamp }
@@ -156,7 +155,7 @@ class AcceptedOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicks
                     }
                 }
 
-            } else{
+            } else {
                 when (sortBy) {
                     ORDER_TIMESTAMP -> {
                         acceptedOrders.sortByDescending { it.orderTimeStamp }
@@ -175,35 +174,21 @@ class AcceptedOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicks
 
     }
 
-    private fun getOrders() {
-        if (mAuth.currentUser != null) {
-            parentActivity.progressBarState(View.VISIBLE)
-            acceptedOrders.clear()
+    private fun setOrdersToRecyclerView(querySnapshot: QuerySnapshot? = null) {
+        parentActivity.progressBarState(View.VISIBLE)
+        acceptedOrders.clear()
 
-            val a = ordersCollection.whereEqualTo(ORDER_ACCEPTED_BY, mAuth.uid).whereEqualTo(
-                ORDER_STATUS, STATUS_ORDER_ACCEPTED)
-                .orderBy(sortBy, sortDirection).get()
-
-            a.addOnCompleteListener {
-                if (it.isSuccessful) {
-                    for (document in it.result?.withIndex()!!) {
-                        acceptedOrders.add(
-                            document.index,
-                            document.value.toObject(OrderModel::class.java)
-                        )
-                        acceptedOrders[document.index].id = document.value.id
-                    }
-
-
-                    updateRecyclerView()
-
-                } else {
-                    toastMessage("Error")
-                    Log.d("TAG", it.exception.toString())
-                }
-                parentActivity.progressBarState(View.GONE)
+        if (querySnapshot != null) {
+            for (document in querySnapshot.withIndex()) {
+                acceptedOrders.add(
+                    document.index,
+                    document.value.toObject(OrderModel::class.java)
+                )
+                acceptedOrders[document.index].id = document.value.id
             }
-        } else toastMessage("You are not signed in!")
+            updateRecyclerView()
+            parentActivity.progressBarState(GONE)
+        } else toastMessage("Something went wrong. Try updating app")
     }
 
     private fun updateRecyclerView() {
@@ -266,7 +251,7 @@ class AcceptedOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicks
                 registerListener()
                 Handler().postDelayed({
                     recyclerView.smoothScrollToPosition(0)
-                },80)
+                }, 80)
                 return true
             }
             R.id.menuSortByTime -> {
@@ -276,7 +261,7 @@ class AcceptedOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicks
                     registerListener()
                     Handler().postDelayed({
                         recyclerView.smoothScrollToPosition(0)
-                    },80)
+                    }, 80)
                 }
                 return true
             }
@@ -287,7 +272,7 @@ class AcceptedOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicks
                     registerListener()
                     Handler().postDelayed({
                         recyclerView.smoothScrollToPosition(0)
-                    },80)
+                    }, 80)
                 }
                 return true
             }

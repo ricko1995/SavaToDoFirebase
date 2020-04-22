@@ -7,16 +7,14 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
+import android.view.View.GONE
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.*
 import com.ricko.kotlinfirebasetest.*
 import com.ricko.kotlinfirebasetest.OrderModel.Companion.ORDER_BY
 import com.ricko.kotlinfirebasetest.OrderModel.Companion.ORDER_STATUS
@@ -26,6 +24,7 @@ import com.ricko.kotlinfirebasetest.OrderModel.Companion.STATUS_ORDER_ACCEPTED
 import com.ricko.kotlinfirebasetest.OrderModel.Companion.STATUS_ORDER_FINISHED
 import com.ricko.kotlinfirebasetest.OrderModel.Companion.STATUS_ORDER_MADE
 import com.ricko.kotlinfirebasetest.OrdersRecyclerViewAdapter.Companion.MY_ORDERS
+import com.ricko.kotlinfirebasetest.R
 import kotlinx.android.synthetic.main.fragment_my_orders.view.*
 
 class MyOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInterface {
@@ -93,27 +92,29 @@ class MyOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInterf
             listenerRegistration = ordersCollection.whereEqualTo(ORDER_BY, mAuth.uid)
                 .orderBy(sortBy, sortDirection)
                 .addSnapshotListener { querySnapshot, _ ->
-                    val newOrders: ArrayList<OrderModel> = ArrayList()
-                    if (recyclerViewAdapter != null && querySnapshot != null) {
-                        for (document in querySnapshot.documents.withIndex()) {
-                            newOrders.add(
-                                document.index,
-                                document.value.toObject(OrderModel::class.java)!!
-                            )
-                            newOrders[document.index].id = document.value.id
+                    if (recyclerViewAdapter != null) {
+                        if (querySnapshot != null) {
+                            val newOrders: ArrayList<OrderModel> = ArrayList()
+                            for (document in querySnapshot.documents.withIndex()) {
+                                newOrders.add(
+                                    document.index,
+                                    document.value.toObject(OrderModel::class.java)!!
+                                )
+                                newOrders[document.index].id = document.value.id
+                            }
+                            when {
+                                newOrders.size > myOrders.size -> {
+                                    updateAddedOrder(newOrders)
+                                }
+                                newOrders.size < myOrders.size -> {
+                                    updateRemovedOrder(newOrders)
+                                }
+                                newOrders.size == myOrders.size -> {
+                                    updateModifiedOrder(newOrders)
+                                }
+                            }
                         }
-                        when {
-                            newOrders.size > myOrders.size -> {
-                                updateAddedOrder(newOrders)
-                            }
-                            newOrders.size < myOrders.size -> {
-                                updateRemovedOrder(newOrders)
-                            }
-                            newOrders.size == myOrders.size -> {
-                                updateModifiedOrder(newOrders)
-                            }
-                        }
-                    } else getOrders()
+                    } else setOrdersToRecyclerView(querySnapshot)
                 }
         }
     }
@@ -177,34 +178,21 @@ class MyOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInterf
 
     }
 
-    private fun getOrders() {
-        if (mAuth.currentUser != null) {
-            parentActivity.progressBarState(View.VISIBLE)
-            myOrders.clear()
+    private fun setOrdersToRecyclerView(querySnapshot: QuerySnapshot? = null) {
+        parentActivity.progressBarState(View.VISIBLE)
+        myOrders.clear()
 
-            val a = ordersCollection.whereEqualTo(ORDER_BY, mAuth.uid)
-                .orderBy(sortBy, sortDirection).get()
-
-            a.addOnCompleteListener {
-                if (it.isSuccessful) {
-                    for (document in it.result?.withIndex()!!) {
-                        myOrders.add(
-                            document.index,
-                            document.value.toObject(OrderModel::class.java)
-                        )
-                        myOrders[document.index].id = document.value.id
-                    }
-
-
-                    updateRecyclerView()
-
-                } else {
-                    toastMessage("Error")
-                    Log.d("TAG", it.exception.toString())
-                }
-                parentActivity.progressBarState(View.GONE)
+        if (querySnapshot != null) {
+            for (document in querySnapshot.withIndex()) {
+                myOrders.add(
+                    document.index,
+                    document.value.toObject(OrderModel::class.java)
+                )
+                myOrders[document.index].id = document.value.id
             }
-        } else toastMessage("You are not signed in!")
+            updateRecyclerView()
+            parentActivity.progressBarState(GONE)
+        } else toastMessage("Something went wrong. Try updating app")
     }
 
     private fun updateRecyclerView() {
@@ -306,7 +294,7 @@ class MyOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInterf
                 registerListener()
                 Handler().postDelayed({
                     recyclerView.smoothScrollToPosition(0)
-                },80)
+                }, 80)
                 return true
             }
             R.id.menuSortByTime -> {
@@ -316,7 +304,7 @@ class MyOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInterf
                     registerListener()
                     Handler().postDelayed({
                         recyclerView.smoothScrollToPosition(0)
-                    },80)
+                    }, 80)
                 }
                 return true
             }
@@ -327,7 +315,7 @@ class MyOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInterf
                     registerListener()
                     Handler().postDelayed({
                         recyclerView.smoothScrollToPosition(0)
-                    },80)
+                    }, 80)
                 }
                 return true
             }
