@@ -4,26 +4,15 @@ import android.app.ActivityOptions
 import android.content.Intent
 import android.os.Bundle
 import android.transition.Explode
-import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
-import android.view.View.GONE
-import android.view.View.VISIBLE
 import android.view.Window
-import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.get
-import androidx.fragment.app.findFragment
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
-import com.ricko.kotlinfirebasetest.ui.AllOrdersFragment
-import com.ricko.kotlinfirebasetest.ui.MyOrdersFragment
 import kotlinx.android.synthetic.main.activity_main_bottom_navigation.*
 
 class MainBottomNavigationActivity : AppCompatActivity() {
@@ -46,7 +35,7 @@ class MainBottomNavigationActivity : AppCompatActivity() {
         // menu should be considered as top level destinations.
         val appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_notifications
+                R.id.navigation_all_orders, R.id.navigation_my_orders, R.id.navigation_accepted_orders
             )
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
@@ -58,22 +47,19 @@ class MainBottomNavigationActivity : AppCompatActivity() {
         }
     }
 
-    fun scrolling(dir: String) {
+    fun showHideNavigationViewAndFab(dir: String) {
         when(dir){
-            "UP"-> run {
-                ordersFabBtn.animate().translationY(0f)
+            SHOW_VIEWS-> run {
+                ordersFabBtn.animate().translationX(0f)
+                nav_view.animate().translationY(0f)
             }
-            "DOWN"-> run {
-                ordersFabBtn.animate().translationY(500f)
+            HIDE_VIEWS-> run {
+                ordersFabBtn.animate().translationX(300f)
+                nav_view.animate().translationY(300f)
             }
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-
-        menuInflater.inflate(R.menu.settings_menu, menu)
-        return true
-    }
 
     fun progressBarState(state: Int){
         ordersProgressBar.visibility = state
@@ -82,6 +68,11 @@ class MainBottomNavigationActivity : AppCompatActivity() {
     private fun toastMessage(msg: String) {
 
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+    }
+
+    companion object{
+        const val SHOW_VIEWS = "show"
+        const val HIDE_VIEWS = "hide"
     }
 
 }

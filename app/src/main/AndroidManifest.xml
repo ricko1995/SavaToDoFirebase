@@ -22,7 +22,6 @@
         <activity android:name=".MainActivity" />
         <activity android:name=".SignUpActivity" />
         <activity android:name=".NewOrderActivity" />
-        <activity android:name=".OrderDetailActivity" />
     </application>
 
 </manifest>

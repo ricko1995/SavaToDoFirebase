@@ -10,19 +10,20 @@
         android:title="Change Theme" />
     <item
         android:id="@+id/menuLogout"
-        android:title="Logout" />
+        android:title="Logout"/>
     <item
         android:id="@+id/menuSortDirection"
         android:title="Sort Direction"
-        android:icon="@drawable/ic_sort_by_alpha_white_24dp"
-        app:showAsAction="ifRoom"/>
+        android:icon="@drawable/ic_swap_vert_white_24dp"
+        app:showAsAction="always"/>
     <item
         android:title="Sort By"
         android:icon="@drawable/ic_sort_white_24dp"
         app:showAsAction="ifRoom">
         <menu>
             <item android:title="Sort by time"
-                android:id="@+id/menuSortByTime"/>
+                android:id="@+id/menuSortByTime"
+                app:showAsAction="always|withText"/>
             <item android:title="Sort by tip"
                 android:id="@+id/menuSortByTip"/>
         </menu>

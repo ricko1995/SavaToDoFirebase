@@ -4,18 +4,20 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.MenuItem
-import android.view.View
+import android.view.*
 import android.view.View.GONE
-import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.*
+import com.google.gson.Gson
 import com.ricko.kotlinfirebasetest.*
+import com.ricko.kotlinfirebasetest.MainBottomNavigationActivity.Companion.HIDE_VIEWS
+import com.ricko.kotlinfirebasetest.MainBottomNavigationActivity.Companion.SHOW_VIEWS
+import com.ricko.kotlinfirebasetest.OrderDetailsBottomSheetFragment.Companion.ORDER_DETAILS_KEY
+import com.ricko.kotlinfirebasetest.OrderDetailsBottomSheetFragment.Companion.ORDER_DETAILS_TAG
 import com.ricko.kotlinfirebasetest.OrderModel.Companion.ORDER_BY
 import com.ricko.kotlinfirebasetest.OrderModel.Companion.ORDER_STATUS
 import com.ricko.kotlinfirebasetest.OrderModel.Companion.ORDER_TIMESTAMP
@@ -30,8 +32,8 @@ import kotlinx.android.synthetic.main.fragment_my_orders.view.*
 class MyOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInterface {
 
     private lateinit var parentActivity: MainBottomNavigationActivity
-    private var previousScrollDir = "UP"
-    private var currentScrollDir = "UP"
+    private var previousScrollDir = SHOW_VIEWS
+    private var currentScrollDir = SHOW_VIEWS
 
     private var myOrders: ArrayList<OrderModel> = ArrayList()
     private lateinit var mAuth: FirebaseAuth
@@ -54,7 +56,6 @@ class MyOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInterf
         setHasOptionsMenu(true)
 
         parentActivity = activity as MainBottomNavigationActivity
-        parentActivity.scrolling(currentScrollDir)
     }
 
     override fun onCreateView(
@@ -63,6 +64,7 @@ class MyOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInterf
         savedInstanceState: Bundle?
     ): View? {
         val root = inflater.inflate(R.layout.fragment_my_orders, container, false)
+        parentActivity.showHideNavigationViewAndFab(SHOW_VIEWS)
 
         mAuth = FirebaseAuth.getInstance()
         db = FirebaseFirestore.getInstance()
@@ -75,10 +77,10 @@ class MyOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInterf
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
 
-                currentScrollDir = if (dy > 0) "DOWN" else "UP"
+                currentScrollDir = if (dy > 0) HIDE_VIEWS else SHOW_VIEWS
 
                 if (previousScrollDir != currentScrollDir) {
-                    parentActivity.scrolling(currentScrollDir)
+                    parentActivity.showHideNavigationViewAndFab(currentScrollDir)
                     previousScrollDir = currentScrollDir
                 }
             }
@@ -173,7 +175,8 @@ class MyOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInterf
                 }
             }
 
-            recyclerViewAdapter?.notifyItemInserted(myOrders.indexOf(addedOrder))
+//            recyclerViewAdapter?.notifyItemInserted(myOrders.indexOf(addedOrder))
+            recyclerViewAdapter?.notifyDataSetChanged()
         }
 
     }
@@ -211,16 +214,20 @@ class MyOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInterf
     }
 
     override fun onCardClick(order: OrderModel) {
-        //TODO open activity OrderDetailActivity
+        val extras = Bundle()
+        extras.putString(ORDER_DETAILS_KEY, Gson().toJson(order))
+
+        val orderDetailsBottomSheetFragment = OrderDetailsBottomSheetFragment()
+        orderDetailsBottomSheetFragment.arguments = extras
+        orderDetailsBottomSheetFragment.show(
+            parentActivity.supportFragmentManager,
+            ORDER_DETAILS_TAG
+        )
     }
 
-    override fun onPositiveBtnClick(order: OrderModel) {
-        //NEVER CALLED
-    }
+    override fun onPositiveBtnClick(order: OrderModel) {}
 
-    override fun onNegativeBtnClick(order: OrderModel) {
-        //NEVER CALLED
-    }
+    override fun onNegativeBtnClick(order: OrderModel) {}
 
     override fun onNeutralBtnClick(order: OrderModel) {
         when (order.orderStatus) {
@@ -265,6 +272,29 @@ class MyOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInterf
         }
     }
 
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        val result = super.onPrepareOptionsMenu(menu)
+        val timeItem = menu.findItem(R.id.menuSortByTime)
+        val tipItem = menu.findItem(R.id.menuSortByTip)
+        if (sortBy == ORDER_TIMESTAMP) {
+            timeItem.title = "Sorted by time"
+            tipItem.title = "Sort by tip"
+            timeItem.setIcon(if (sortDirection == Query.Direction.DESCENDING) R.drawable.ic_arrow_drop_down_white_24dp else R.drawable.ic_arrow_drop_up_white_24dp)
+            tipItem.icon = null
+        } else if (sortBy == ORDER_TIP) {
+            tipItem.title = "Sorted by tip"
+            timeItem.title = "Sort by time"
+            tipItem.setIcon(if (sortDirection == Query.Direction.DESCENDING) R.drawable.ic_arrow_drop_down_white_24dp else R.drawable.ic_arrow_drop_up_white_24dp)
+            timeItem.icon = null
+        }
+        return result
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.settings_menu, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
         when (item.itemId) {
@@ -294,6 +324,7 @@ class MyOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInterf
                 registerListener()
                 Handler().postDelayed({
                     recyclerView.smoothScrollToPosition(0)
+                    activity?.invalidateOptionsMenu()
                 }, 80)
                 return true
             }
@@ -304,6 +335,7 @@ class MyOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInterf
                     registerListener()
                     Handler().postDelayed({
                         recyclerView.smoothScrollToPosition(0)
+                        activity?.invalidateOptionsMenu()
                     }, 80)
                 }
                 return true
@@ -315,6 +347,7 @@ class MyOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInterf
                     registerListener()
                     Handler().postDelayed({
                         recyclerView.smoothScrollToPosition(0)
+                        activity?.invalidateOptionsMenu()
                     }, 80)
                 }
                 return true

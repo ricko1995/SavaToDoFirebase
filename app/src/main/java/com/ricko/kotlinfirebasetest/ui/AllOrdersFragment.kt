@@ -4,10 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.widget.Toast
@@ -18,6 +15,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.*
 import com.google.gson.Gson
 import com.ricko.kotlinfirebasetest.*
+import com.ricko.kotlinfirebasetest.MainBottomNavigationActivity.Companion.HIDE_VIEWS
+import com.ricko.kotlinfirebasetest.MainBottomNavigationActivity.Companion.SHOW_VIEWS
+import com.ricko.kotlinfirebasetest.OrderDetailsBottomSheetFragment.Companion.ORDER_DETAILS_KEY
+import com.ricko.kotlinfirebasetest.OrderDetailsBottomSheetFragment.Companion.ORDER_DETAILS_TAG
 import com.ricko.kotlinfirebasetest.OrderModel.Companion.ORDER_ACCEPTED_BY
 import com.ricko.kotlinfirebasetest.OrderModel.Companion.ORDER_BY
 import com.ricko.kotlinfirebasetest.OrderModel.Companion.ORDER_STATUS
@@ -33,8 +34,8 @@ import kotlinx.android.synthetic.main.fragment_all_orders.view.*
 class AllOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInterface {
 
     private lateinit var parentActivity: MainBottomNavigationActivity
-    private var previousScrollDir = "UP"
-    private var currentScrollDir = "UP"
+    private var previousScrollDir = SHOW_VIEWS
+    private var currentScrollDir = SHOW_VIEWS
 
     private var allOrders: ArrayList<OrderModel> = ArrayList()
     private lateinit var mAuth: FirebaseAuth
@@ -57,7 +58,6 @@ class AllOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInter
         setHasOptionsMenu(true)
 
         parentActivity = activity as MainBottomNavigationActivity
-        parentActivity.scrolling(currentScrollDir)
     }
 
     override fun onCreateView(
@@ -66,6 +66,7 @@ class AllOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInter
         savedInstanceState: Bundle?
     ): View? {
         val root = inflater.inflate(R.layout.fragment_all_orders, container, false)
+        parentActivity.showHideNavigationViewAndFab(SHOW_VIEWS)
 
         mAuth = FirebaseAuth.getInstance()
         db = FirebaseFirestore.getInstance()
@@ -75,13 +76,13 @@ class AllOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInter
         registerListener()
 
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
+            override fun onScrolled(_recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(_recyclerView, dx, dy)
 
-                currentScrollDir = if (dy > 0) "DOWN" else "UP"
+                currentScrollDir = if (dy > 0) HIDE_VIEWS else SHOW_VIEWS
 
                 if (previousScrollDir != currentScrollDir) {
-                    parentActivity.scrolling(currentScrollDir)
+                    parentActivity.showHideNavigationViewAndFab(currentScrollDir)
                     previousScrollDir = currentScrollDir
                 }
             }
@@ -180,7 +181,8 @@ class AllOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInter
                 }
             }
 
-            recyclerViewAdapter?.notifyItemInserted(allOrders.indexOf(addedOrder))
+//            recyclerViewAdapter?.notifyItemInserted(allOrders.indexOf(addedOrder))
+            recyclerViewAdapter?.notifyDataSetChanged()
         }
 
     }
@@ -205,124 +207,150 @@ class AllOrdersFragment : Fragment(), OrdersRecyclerViewAdapter.OrderClicksInter
             updateRecyclerView()
             parentActivity.progressBarState(GONE)
         } else toastMessage("Something went wrong. Try updating app")
-}
-
-private fun updateRecyclerView() {
-    if (!allOrders.isNullOrEmpty()) {
-        recyclerViewAdapter =
-            OrdersRecyclerViewAdapter(allOrders, this, ALL_ORDERS, parentActivity)
-        recyclerView.adapter = recyclerViewAdapter
-        recyclerView.layoutManager = LinearLayoutManager(context)
-        recyclerView.setHasFixedSize(true)
     }
-}
 
-private fun toastMessage(msg: String) {
-    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-}
+    private fun updateRecyclerView() {
+        if (!allOrders.isNullOrEmpty()) {
+            recyclerViewAdapter =
+                OrdersRecyclerViewAdapter(allOrders, this, ALL_ORDERS, parentActivity)
+            recyclerView.adapter = recyclerViewAdapter
+            recyclerView.layoutManager = LinearLayoutManager(context)
+            recyclerView.setHasFixedSize(true)
+        }
+    }
 
-override fun onCardClick(order: OrderModel) {
-    //TODO open activity OrderDetailActivity
+    private fun toastMessage(msg: String) {
+        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+    }
 
-    val intent = Intent(context, OrderDetailActivity::class.java)
-    intent.putExtra("order", Gson().toJson(order))
-    startActivity(intent)
-}
+    override fun onCardClick(order: OrderModel) {
+        val extras = Bundle()
+        extras.putString(ORDER_DETAILS_KEY, Gson().toJson(order))
 
-override fun onPositiveBtnClick(order: OrderModel) {
-    ordersCollection.document(order.id!!).update(
-        mapOf(
-            ORDER_STATUS to STATUS_ORDER_ACCEPTED,
-            ORDER_ACCEPTED_BY to mAuth.uid
+        val orderDetailsBottomSheetFragment = OrderDetailsBottomSheetFragment()
+        orderDetailsBottomSheetFragment.arguments = extras
+        orderDetailsBottomSheetFragment.show(
+            parentActivity.supportFragmentManager,
+            ORDER_DETAILS_TAG
         )
-    )
-        .addOnCompleteListener {
-            if (it.isSuccessful) {
-                toastMessage("Order Accepted")
-            } else {
-                toastMessage("Error")
-                Log.d("TAG", it.exception.toString())
-            }
-        }
-}
-
-override fun onNegativeBtnClick(order: OrderModel) {
-    ordersCollection.document(order.id!!)
-        .update(ORDER_SUCKS_BY, FieldValue.arrayUnion(mAuth.uid))
-        .addOnCompleteListener {
-            if (it.isSuccessful) {
-                toastMessage("Order Sucks")
-            } else {
-                toastMessage("Error")
-                Log.d("TAG", it.exception.toString())
-            }
-        }
-}
-
-override fun onNeutralBtnClick(order: OrderModel) {
-//        TODO("Not yet implemented")
-}
-
-
-override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-    when (item.itemId) {
-        R.id.menuEditUser -> {
-            updateRecyclerView()
-            return true
-        }
-        R.id.menuChangeTheme -> {
-            toastMessage("change theme")
-            return true
-        }
-        R.id.menuLogout -> {
-            mAuth.signOut()
-            val intent = Intent(context, LoginActivity::class.java)
-            startActivity(intent)
-            activity?.finish()
-            return true
-        }
-        R.id.menuSortDirection -> {
-            sortDirection = if (sortDirection == Query.Direction.DESCENDING) {
-                Query.Direction.ASCENDING
-            } else {
-                Query.Direction.DESCENDING
-            }
-
-            listenerRegistration?.remove()
-            registerListener()
-            Handler().postDelayed({
-                recyclerView.smoothScrollToPosition(0)
-            }, 80)
-            return true
-        }
-        R.id.menuSortByTime -> {
-            if (sortBy != ORDER_TIMESTAMP) {
-                sortBy = ORDER_TIMESTAMP
-                listenerRegistration?.remove()
-                registerListener()
-                Handler().postDelayed({
-                    recyclerView.smoothScrollToPosition(0)
-                }, 80)
-            }
-            return true
-        }
-        R.id.menuSortByTip -> {
-            if (sortBy != ORDER_TIP) {
-                sortBy = ORDER_TIP
-                listenerRegistration?.remove()
-                registerListener()
-                Handler().postDelayed({
-                    recyclerView.smoothScrollToPosition(0)
-                }, 80)
-            }
-            return true
-        }
-        else -> {
-            return super.onOptionsItemSelected(item)
-        }
     }
 
+    override fun onPositiveBtnClick(order: OrderModel) {
+        ordersCollection.document(order.id!!).update(
+            mapOf(
+                ORDER_STATUS to STATUS_ORDER_ACCEPTED,
+                ORDER_ACCEPTED_BY to mAuth.uid
+            )
+        )
+            .addOnCompleteListener {
+                if (it.isSuccessful) {
+                    toastMessage("Order Accepted")
+                } else {
+                    toastMessage("Error")
+                    Log.d("TAG", it.exception.toString())
+                }
+            }
+    }
 
-}
+    override fun onNegativeBtnClick(order: OrderModel) {
+        ordersCollection.document(order.id!!)
+            .update(ORDER_SUCKS_BY, FieldValue.arrayUnion(mAuth.uid))
+            .addOnCompleteListener {
+                if (it.isSuccessful) {
+                    toastMessage("Order Sucks")
+                } else {
+                    toastMessage("Error")
+                    Log.d("TAG", it.exception.toString())
+                }
+            }
+    }
+
+    override fun onNeutralBtnClick(order: OrderModel) {}
+
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        val result = super.onPrepareOptionsMenu(menu)
+        val timeItem = menu.findItem(R.id.menuSortByTime)
+        val tipItem = menu.findItem(R.id.menuSortByTip)
+        if (sortBy == ORDER_TIMESTAMP) {
+            timeItem.title = "Sorted by time"
+            tipItem.title = "Sort by tip"
+            timeItem.setIcon(if (sortDirection == Query.Direction.DESCENDING) R.drawable.ic_arrow_drop_down_white_24dp else R.drawable.ic_arrow_drop_up_white_24dp)
+            tipItem.icon = null
+        } else if (sortBy == ORDER_TIP) {
+            tipItem.title = "Sorted by tip"
+            timeItem.title = "Sort by time"
+            tipItem.setIcon(if (sortDirection == Query.Direction.DESCENDING) R.drawable.ic_arrow_drop_down_white_24dp else R.drawable.ic_arrow_drop_up_white_24dp)
+            timeItem.icon = null
+        }
+        return result
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.settings_menu, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.menuEditUser -> {
+                updateRecyclerView()
+                return true
+            }
+            R.id.menuChangeTheme -> {
+                toastMessage("change theme")
+                return true
+            }
+            R.id.menuLogout -> {
+                mAuth.signOut()
+                val intent = Intent(context, LoginActivity::class.java)
+                startActivity(intent)
+                activity?.finish()
+                return true
+            }
+            R.id.menuSortDirection -> {
+                sortDirection = if (sortDirection == Query.Direction.DESCENDING) {
+                    Query.Direction.ASCENDING
+                } else {
+                    Query.Direction.DESCENDING
+                }
+
+                listenerRegistration?.remove()
+                registerListener()
+                Handler().postDelayed({
+                    recyclerView.smoothScrollToPosition(0)
+                    activity?.invalidateOptionsMenu()
+                }, 80)
+                return true
+            }
+            R.id.menuSortByTime -> {
+                if (sortBy != ORDER_TIMESTAMP) {
+                    sortBy = ORDER_TIMESTAMP
+                    listenerRegistration?.remove()
+                    registerListener()
+                    Handler().postDelayed({
+                        recyclerView.smoothScrollToPosition(0)
+                        activity?.invalidateOptionsMenu()
+                    }, 80)
+                }
+                return true
+            }
+            R.id.menuSortByTip -> {
+                if (sortBy != ORDER_TIP) {
+                    sortBy = ORDER_TIP
+                    listenerRegistration?.remove()
+                    registerListener()
+                    Handler().postDelayed({
+                        recyclerView.smoothScrollToPosition(0)
+                        activity?.invalidateOptionsMenu()
+                    }, 80)
+                }
+                return true
+            }
+            else -> {
+                return super.onOptionsItemSelected(item)
+            }
+        }
+
+
+    }
 }

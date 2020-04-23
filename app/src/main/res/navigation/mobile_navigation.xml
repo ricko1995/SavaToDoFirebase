@@ -3,22 +3,22 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/navigation_home">
+    app:startDestination="@+id/navigation_all_orders">
 
     <fragment
-        android:id="@+id/navigation_home"
+        android:id="@+id/navigation_all_orders"
         android:name="com.ricko.kotlinfirebasetest.ui.AllOrdersFragment"
         android:label="@string/all_orders"
         tools:layout="@layout/fragment_all_orders" />
 
     <fragment
-        android:id="@+id/navigation_dashboard"
+        android:id="@+id/navigation_my_orders"
         android:name="com.ricko.kotlinfirebasetest.ui.MyOrdersFragment"
         android:label="@string/my_orders"
         tools:layout="@layout/fragment_my_orders" />
 
     <fragment
-        android:id="@+id/navigation_notifications"
+        android:id="@+id/navigation_accepted_orders"
         android:name="com.ricko.kotlinfirebasetest.ui.AcceptedOrdersFragment"
         android:label="@string/accepted_orders"
         tools:layout="@layout/fragment_accepted_orders" />
